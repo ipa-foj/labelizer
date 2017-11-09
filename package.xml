@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+	<package format="2">
+	<name>labelizer</name>
+	<version>0.0.0</version>
+	<description>
+		This package provides a simple GUI to label different images to allow to use them as training datas for machine learning algorithms.
+	</description>
+	<author email="florian.jordan@ipa.fraunhofer.de">Florian Jordan</author>
+	<maintainer email="florian.jordan@ipa.fraunhofer.de">Florian Jordan</maintainer>
+	<license>GPL 3.0</license>
+
+	<buildtool_depend>catkin</buildtool_depend>
+
+	<depend>cmake_modules</depend>
+	<depend>roscpp</depend>
+	<depend>rospy</depend>
+	<depend>roslib</depend>
+
+	<export>
+		<rqt_gui plugin="${prefix}/plugin.xml"/>
+	</export>
+
+</package>
