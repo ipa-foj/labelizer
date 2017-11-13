@@ -1,8 +1,12 @@
 #pragma once
 
+// rqt includes
 #include <rqt_gui_cpp/plugin.h>
-#include <QWidget>
+// form include (package specific)
 #include <labelizer/ui_labelizer_form.h>
+// Qt includes
+#include <QWidget>
+#include <QImage>
 
 namespace labelizer
 {
@@ -11,14 +15,31 @@ class LabelizerPlugin : public rqt_gui_cpp::Plugin
 {
 	Q_OBJECT
 public:
+	/*
+	 * default constructor
+	 */
 	LabelizerPlugin();
+
+	/*
+	 * initializer for the plugin
+	 */
 	virtual void initPlugin(qt_gui_cpp::PluginContext& context);
+
+	/*
+	 * shutdown function
+	 */
 	virtual void shutdownPlugin();
-	virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const;
-	virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings);
 
 private:
-	Ui::MainWindow ui_;
+	/*
+	 * created GUI that is stored inside of src/labelizer_form.ui
+	 */
+	Ui::LabelizerWidgetWindow ui_;
+
+	/*
+	 * pointer pointing to a general QtWidget, in this special case the labelizer widget
+	 */
 	QWidget* widget_;
 };
+
 } // end of namespace labelizer

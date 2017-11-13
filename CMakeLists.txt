@@ -4,6 +4,7 @@ project(labelizer)
 add_compile_options(-std=c++11)
 
 set(catkin_RUN_PACKAGES
+	cv_bridge
 	rospy
 	roscpp
 	roslib
@@ -45,7 +46,6 @@ endif()
 # important: common/include needs to be here if you have such a directory
 catkin_package(
 INCLUDE_DIRS
-	include
 LIBRARIES
 	${PROJECT_NAME}
 CATKIN_DEPENDS
@@ -69,10 +69,10 @@ set(rqt_cpp_UIS
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   qt5_wrap_cpp(rqt_cpp_MOCS ${rqt_cpp_HDRS})
-  qt5_wrap_ui(rqt_cpp_UIS_H ${rqt_cpp_UIS})
+  qt5_wrap_ui(rqt_cpp_UIS_HPP ${rqt_cpp_UIS})
 else()
   qt4_wrap_cpp(rqt_cpp_MOCS ${rqt_cpp_HDRS})
-  qt4_wrap_ui(rqt_cpp_UIS_H ${rqt_cpp_UIS})
+  qt4_wrap_ui(rqt_cpp_UIS_HPP ${rqt_cpp_UIS})
 endif()
 
 ###########
@@ -89,18 +89,20 @@ include_directories(
 add_library(${PROJECT_NAME}
 	${rqt_cpp_SRCS}
 	${rqt_cpp_MOCS}
-	${rqt_cpp_UIS_H}
+	${rqt_cpp_UIS_HPP}
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
-
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
 else()
   target_link_libraries(${PROJECT_NAME} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 endif()
+
+find_package(class_loader)
+class_loader_hide_library_symbols(${PROJECT_NAME})
 
 #############
 ## Install ##
@@ -113,18 +115,18 @@ endif()
 #)
 
 #uncomment this if you have a common-directory with header-files
-install(DIRECTORY common/include/${PROJECT_NAME}/
-	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-	FILES_MATCHING PATTERN "*.h"
-	PATTERN ".svn" EXCLUDE
-)
+#install(DIRECTORY common/include/${PROJECT_NAME}/
+#	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#	FILES_MATCHING PATTERN "*.h"
+#	PATTERN ".svn" EXCLUDE
+#)
 
 #uncomment this if you have header-files in your project
-install(DIRECTORY ros/include/${PROJECT_NAME}/
-	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-	FILES_MATCHING PATTERN "*.h"
-	PATTERN ".svn" EXCLUDE
-)
+#install(DIRECTORY ros/include/${PROJECT_NAME}/
+#	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#	FILES_MATCHING PATTERN "*.h"
+#	PATTERN ".svn" EXCLUDE
+#)
 
 #install(DIRECTORY scripts
 #	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

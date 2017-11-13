@@ -1,5 +1,5 @@
 <library path="lib/liblabelizer">
-	<class name="labelizer/Labelizer" type="labelizer.LabelizerPlugin" base_class_type="rqt_gui_cpp::Plugin">
+	<class name="labelizer/LabelizerPlugin" type="labelizer::LabelizerPlugin" base_class_type="rqt_gui_cpp::Plugin">
 		<description>
 			GUI for showing images and retrieving a label for it, using the user input.
 		</description>
