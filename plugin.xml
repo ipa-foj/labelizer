@@ -1,11 +1,11 @@
-<library path="src">
-	<class name="Labelizer" type="rqt_mypkg.my_module.MyPlugin" base_class_type="rqt_gui_py::Plugin">
+<library path="lib/liblabelizer">
+	<class name="labelizer/Labelizer" type="labelizer.LabelizerPlugin" base_class_type="rqt_gui_cpp::Plugin">
 		<description>
 			GUI for showing images and retrieving a label for it, using the user input.
 		</description>
 		<qtgui>
 			<label>Labelizer Plugin</label>
-			<icon type="theme">system-help</icon>
+			<icon type="theme">image-x-generic</icon>
 			<statustip>GUI to provide labels for images.</statustip>
 		</qtgui>
 	</class>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 	<package format="2">
 	<name>labelizer</name>
-	<version>0.0.0</version>
+	<version>0.0.1</version>
 	<description>
 		This package provides a simple GUI to label different images to allow to use them as training datas for machine learning algorithms.
 	</description>
@@ -15,6 +15,8 @@
 	<depend>roscpp</depend>
 	<depend>rospy</depend>
 	<depend>roslib</depend>
+	<depend>rqt_gui</depend>
+	<depend>rqt_gui_cpp</depend>
 
 	<export>
 		<rqt_gui plugin="${prefix}/plugin.xml"/>

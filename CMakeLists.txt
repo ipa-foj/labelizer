@@ -7,6 +7,8 @@ set(catkin_RUN_PACKAGES
 	rospy
 	roscpp
 	roslib
+	rqt_gui
+	rqt_gui_cpp
 )
 
 set(catkin_BUILD_PACKAGES
@@ -19,7 +21,14 @@ find_package(catkin REQUIRED COMPONENTS
 	${catkin_BUILD_PACKAGES}
 )
 
+
 ## Find several needed libraries
+if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
+  find_package(Qt5Widgets REQUIRED)
+else()
+  find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+  include(${QT_USE_FILE})
+endif()
 #find_package(OpenCV REQUIRED)
 #find_package(Boost REQUIRED COMPONENTS system chrono thread)
 #find_package(Eigen REQUIRED)
@@ -36,37 +45,62 @@ find_package(catkin REQUIRED COMPONENTS
 # important: common/include needs to be here if you have such a directory
 catkin_package(
 INCLUDE_DIRS
-#	common/include
-#	ros/include
+	include
 LIBRARIES
+	${PROJECT_NAME}
 CATKIN_DEPENDS
 	${catkin_RUN_PACKAGES}
 DEPENDS
 )
 
+catkin_python_setup()
+
+set(rqt_cpp_SRCS
+  src/labelizer/labelizer_plugin.cpp
+)
+
+set(rqt_cpp_HDRS
+  include/labelizer/labelizer_plugin.hpp
+)
+
+set(rqt_cpp_UIS
+  src/labelizer/labelizer_form.ui
+)
+
+if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
+  qt5_wrap_cpp(rqt_cpp_MOCS ${rqt_cpp_HDRS})
+  qt5_wrap_ui(rqt_cpp_UIS_H ${rqt_cpp_UIS})
+else()
+  qt4_wrap_cpp(rqt_cpp_MOCS ${rqt_cpp_HDRS})
+  qt4_wrap_ui(rqt_cpp_UIS_H ${rqt_cpp_UIS})
+endif()
 
 ###########
 ## Build ##
 ###########
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# important: common/include also needs to be here if you have it, order of including the coinor-packages relevant, not working when including in wrong order
 include_directories(
-#	common/include
-#	ros/include
+	include
+	${CMAKE_CURRENT_BINARY_DIR}/..
 	${catkin_INCLUDE_DIRS}
 )
 
-# server for coverage checking
-#add_executable(coverage_check_server
-#	ros/src/coverage_check_server.cpp
-#)
-#target_link_libraries(coverage_check_server
-#	${catkin_LIBRARIES} 
-#	${OpenCV_LIBS}
-#	${Boost_LIBRARIES}
-#)
-#add_dependencies(coverage_check_server ${catkin_EXPORTED_TARGETS})
+add_library(${PROJECT_NAME}
+	${rqt_cpp_SRCS}
+	${rqt_cpp_MOCS}
+	${rqt_cpp_UIS_H}
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
+  target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+else()
+  target_link_libraries(${PROJECT_NAME} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+endif()
 
 #############
 ## Install ##
