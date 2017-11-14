@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1252</width>
+    <width>1622</width>
     <height>579</height>
    </rect>
   </property>
@@ -72,9 +72,15 @@
        </item>
        <item>
         <widget class="QLabel" name="image_area">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
-           <width>1500</width>
+           <width>0</width>
            <height>0</height>
           </size>
          </property>
@@ -83,6 +89,9 @@
          </property>
          <property name="text">
           <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -94,17 +103,26 @@
         <widget class="QLabel" name="color_description_label">
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>400</width>
            <height>20</height>
           </size>
          </property>
          <property name="text">
           <string>Color to search</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="color_region">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -114,7 +132,7 @@
         <widget class="QLabel" name="R_slider_label">
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>400</width>
            <height>20</height>
           </size>
          </property>
@@ -125,6 +143,12 @@
        </item>
        <item>
         <widget class="QSlider" name="sigma_R_slider">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="maximum">
           <number>127</number>
          </property>
@@ -137,7 +161,7 @@
         <widget class="QLabel" name="G_slider_label">
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>400</width>
            <height>20</height>
           </size>
          </property>
@@ -148,6 +172,12 @@
        </item>
        <item>
         <widget class="QSlider" name="sigma_G_slider">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="maximum">
           <number>127</number>
          </property>
@@ -160,7 +190,7 @@
         <widget class="QLabel" name="B_slider_label">
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>400</width>
            <height>20</height>
           </size>
          </property>
@@ -171,6 +201,12 @@
        </item>
        <item>
         <widget class="QSlider" name="sigma_B_slider">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="maximum">
           <number>127</number>
          </property>
@@ -181,6 +217,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="finished_btn">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Finished</string>
          </property>
@@ -188,6 +230,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="skip_btn">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Not appearing</string>
          </property>

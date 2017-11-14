@@ -41,7 +41,7 @@ void labelizer::LabelizerPlugin::initPlugin(qt_gui_cpp::PluginContext &context)
 	context.addWidget(widget_);
 
 	// testing, TODO: remove!!
-	displayImage(cv::Mat());
+	displayImage("/home/rmb-fj/Pictures/black+color/2.gif");
 }
 
 
@@ -56,12 +56,9 @@ void labelizer::LabelizerPlugin::shutdownPlugin()
 /*
  * Function that converts the given cv::Mat image into a QImage and displays it in the image frame of the user-interface.
  */
-void labelizer::LabelizerPlugin::displayImage(const cv::Mat& image)
+void labelizer::LabelizerPlugin::displayImage(const QString& image_path)
 {
-//	QImage converted_image(image.data, image.cols, image.rows, image.step[0], QImage::Format_RGB888);
-//	ui_.image_area->setImage(converted_image);
-
-	QPixmap pic("/home/rmb-fj/Pictures/black+color/2.gif");
+	QPixmap pic(image_path);
 	ui_.image_area->setPixmap(pic);
 	ui_.image_area->show();
 }
