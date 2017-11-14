@@ -4,13 +4,10 @@
 // ros includes
 #include <ros/ros.h>
 
-// OpenCV includes
-#include <cv_bridge/cv_bridge.h>
-#include <opencv/cv.h>
-
 // Qt includes
 #include <QString>
 #include <QSize>
+#include <QPixmap>
 
 // Plugin-export libraries --> needed when building a rqt-plugin in c++
 #include <pluginlib/class_list_macros.h>
@@ -36,12 +33,15 @@ void labelizer::LabelizerPlugin::initPlugin(qt_gui_cpp::PluginContext &context)
 	widget_ = new QWidget();
 	ui_.setupUi(widget_);
 
-	//
+	// add the user-interface to the rqt context window (s.t. it shows up in rqt)
 	if (context.serialNumber() > 1)
 	{
 		widget_->setWindowTitle(widget_->windowTitle() + " (" + QString::number(context.serialNumber()) + ")");
 	}
 	context.addWidget(widget_);
+
+	// testing, TODO: remove!!
+	displayImage("/home/rmb-fj/Pictures/black+color/2.gif");
 }
 
 
@@ -51,6 +51,16 @@ void labelizer::LabelizerPlugin::initPlugin(qt_gui_cpp::PluginContext &context)
 void labelizer::LabelizerPlugin::shutdownPlugin()
 {
 
+}
+
+/*
+ * Function that converts the given cv::Mat image into a QImage and displays it in the image frame of the user-interface.
+ */
+void labelizer::LabelizerPlugin::displayImage(const QString& image_path)
+{
+	QPixmap pic(image_path);
+	ui_.image_area->setPixmap(pic);
+	ui_.image_area->show();
 }
 
 /*
