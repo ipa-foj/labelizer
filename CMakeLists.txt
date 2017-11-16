@@ -30,8 +30,12 @@ else()
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
 endif()
-#find_package(OpenCV REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+
 #find_package(Boost REQUIRED COMPONENTS system chrono thread)
+#find_package(OpenCV REQUIRED)
 #find_package(Eigen REQUIRED)
 
 ###################################
@@ -57,14 +61,16 @@ catkin_python_setup()
 
 set(rqt_cpp_SRCS
   src/labelizer/labelizer_plugin.cpp
+  src/labelizer/mouse_q_scene.cpp
 )
 
 set(rqt_cpp_HDRS
   include/labelizer/labelizer_plugin.hpp
+  include/labelizer/mouse_q_scene.hpp
 )
 
 set(rqt_cpp_UIS
-  src/labelizer/labelizer_form.ui
+  include/labelizer/labelizer_form.ui
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
@@ -94,6 +100,7 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${JSONCPP_LIBRARIES}
 )
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   target_link_libraries(${PROJECT_NAME} Qt5::Widgets)

@@ -3,16 +3,21 @@
 // rqt includes
 #include <rqt_gui_cpp/plugin.h>
 
+// package specific includes
+#include <labelizer/mouse_q_scene.hpp>
+
 // form include (package specific)
 #include <labelizer/ui_labelizer_form.h>
 
 // Qt includes
 #include <QWidget>
 #include <QImage>
+#include <QMouseEvent>
 
 // OpenCV includes
 #include <cv_bridge/cv_bridge.h>
 #include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 namespace labelizer
 {
@@ -49,7 +54,7 @@ public:
 	 */
 	virtual void shutdownPlugin();
 
-private:
+protected:
 	/**
 	 * @brief created GUI that is stored inside of src/labelizer_form.ui
 	 */
@@ -61,10 +66,46 @@ private:
 	QWidget* widget_;
 
 	/**
+	 * @brief image_scene_ stores the scene that shows an image that should be labeled.
+	 */
+	MouseQScene* image_scene_;
+
+	/**
+	 * @brief image_ stores the current displayed image as opencv-image, s.t. it can be handled easily.
+	 */
+	cv::Mat image_;
+
+	/**
 	 * @brief displayImage displays the image that is stored in the given absolute path in the GUI.
 	 * @param image_path: A QString that carries the absolute path to the image that should be displayed.
 	 */
 	void displayImage(const QString& image_path);
+
+	/**
+	 * @brief color_search_keyowrds_ is a vector that stores the keywords, which will be added to the color name
+	 * for the google image search (e.g. food, cloth, object,...).
+	 */
+	std::vector<std::string> color_search_keyowrds_;
+
+	/**
+	 * The slots defined from here are used as callback-like functions, when e.g. pressing a button in the GUI.
+	 */
+protected slots:
+	/**
+	 * @brief downloadImages downloads images from google-images that come up when searching for the selected color.
+	 */
+	void downloadImages();
+
+	/**
+	 * @brief labelImages starts the labeling process for the currently selected color.
+	 */
+	void labelImages();
+
+	/**
+	 * @brief showClickCoordinates is a test function to check if the click-tracking worked.
+	 * @todo remove
+	 */
+	void showClickCoordinates(const double x, const double y);
 };
 
 } // end of namespace labelizer
