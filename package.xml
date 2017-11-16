@@ -13,6 +13,7 @@
 
 	<depend>cmake_modules</depend>
 	<depend>cv_bridge</depend>
+	<depend>jsoncpp</depend>
 	<depend>roscpp</depend>
 	<depend>rospy</depend>
 	<depend>roslib</depend>
