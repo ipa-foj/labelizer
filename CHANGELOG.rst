@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package labelizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+0.1.1 (2017-11-17)
+------------------
+* catches wrong storage of .png as .jpg
+* Contributors: Florian Jordan
+
 0.1.0 (2017-11-17)
 ------------------
 * first working version, using a HSV-range based selection of pixels

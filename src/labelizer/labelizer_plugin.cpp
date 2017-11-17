@@ -128,15 +128,21 @@ void labelizer::LabelizerPlugin::shutdownPlugin()
  */
 void labelizer::LabelizerPlugin::displayImage(const QString& image_path)
 {
-	// ********** show the image in the GUI **********
-	QPixmap pic(image_path);
-	image_scene_->clear();
-	image_scene_->addPixmap(pic);
-	image_scene_->setSceneRect(pic.rect());
-	ui_.image_frame->setScene(image_scene_);
-
 	// ********** load the image as opencv image for further handling **********
 	image_ = cv::imread(image_path.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+
+	// ********** show the image in the GUI **********
+	image_scene_->clear();
+	if(image_.rows!=0 && image_.cols!=0)
+	{
+		cv::Mat rgb_image;
+		cv::cvtColor(image_, rgb_image, CV_BGR2RGB);
+		QPixmap pic = QPixmap::fromImage(QImage(rgb_image.data, rgb_image.cols,
+												rgb_image.rows, rgb_image.step, QImage::Format_RGB888));
+		image_scene_->addPixmap(pic);
+		image_scene_->setSceneRect(pic.rect());
+		ui_.image_frame->setScene(image_scene_);
+	}
 }
 
 /*
