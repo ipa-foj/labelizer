@@ -4,5 +4,5 @@
 		["black", "white", "gray", "blue", "purple", "red", "orange", "brown", "yellow", "bluish purple", "purplish blue", "purplish red", "reddish purple", "reddish orange", "reddish brown", "orangish red", "brownish red", "orangish yellow", "brownish yellow", "yellowish orange", "yellowish brown", "yellowish green", "greenish yellow", "greenish blue", "bluish green"],
 	// strings showing the search extensions that are used together with the color names to search for images
 	"search_extensions" :
-		["food", "object", "sign", "animal", "bird"]
+		["food", "object", "flower", "tree", "animal", "bird", "hair", "nature"]
 }

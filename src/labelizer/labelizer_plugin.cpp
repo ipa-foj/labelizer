@@ -16,6 +16,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QGraphicsScene>
+#include <QDebug>
 
 // Plugin-export libraries --> needed when building a rqt-plugin in c++
 #include <pluginlib/class_list_macros.h>
@@ -98,7 +99,8 @@ void labelizer::LabelizerPlugin::initPlugin(qt_gui_cpp::PluginContext &context)
 	V_upper_ = 0.0;
 
 	// ********** connect signals and slots **********
-	connect(ui_.dwnld_btn, SIGNAL(pressed()), this, SLOT(downloadImages()));
+	connect(ui_.dwnld_clr_btn, SIGNAL(pressed()), this, SLOT(downloadImages()));
+	connect(ui_.dwnld_all_btn, SIGNAL(pressed()), this, SLOT(downloadAllImages()));
 	connect(ui_.start_btn, SIGNAL(pressed()), this, SLOT(startLabeleingImages()));
 	connect(ui_.finished_btn, SIGNAL(pressed()), this, SLOT(labelNextImage()));
 	connect(ui_.skip_btn, SIGNAL(pressed()), this, SLOT(saveNegativeLabelImage()));
@@ -150,27 +152,34 @@ void labelizer::LabelizerPlugin::displayImage(const QString& image_path)
  */
 void labelizer::LabelizerPlugin::downloadImages()
 {
+	// ********** get the current color that should be searched **********
+	std::string color_name = ui_.color_name_list->currentItem()->text().toUtf8().constData();
+
+	// ********** get the path to the package **********
+	std::string package_path = ros::package::getPath("labelizer");
+
+	// ********** launch the python script to search and download the images from google images **********
+	QString python_script_path = QString::fromStdString(package_path + "/python/google-images-download.py");
+	QString command("python");
+	QStringList args;
+	args << python_script_path << "--color_name" << QString::fromStdString(color_name) << "--keywords";
+	for(const std::string& keyword : color_search_keyowrds_)
+	{
+		args << QString::fromStdString(keyword);
+	}
+	QProcess *python_script_process = new QProcess(this);
+	python_script_process->start(command, args);
+	python_script_process->waitForFinished(2147483647); // wait for n ms --> maximal integer value, ~35min
+	delete python_script_process;
+}
+
+void labelizer::LabelizerPlugin::downloadAllImages()
+{
 	for(int color_index=0; color_index<ui_.color_name_list->count(); ++color_index)
 	{
-		// get the current color that should be searched
-		std::string color_name = ui_.color_name_list->item(color_index)->text().toUtf8().constData();
-
-		// get the path to the package
-		std::string package_path = ros::package::getPath("labelizer");
-
-		// launch the python script to search and download the images from google images
-		QString python_script_path = QString::fromStdString(package_path + "/python/google-images-download.py");
-		QString command("python");
-		QStringList args;
-		args << python_script_path << "--color_name" << QString::fromStdString(color_name) << "--keywords";
-		for(const std::string& keyword : color_search_keyowrds_)
-		{
-			args << QString::fromStdString(keyword);
-		}
-		QProcess *python_script_process = new QProcess(this);
-		python_script_process->start(command, args);
-		python_script_process->waitForFinished(2147483647); // wait for n ms --> maximal integer value, ~35min
-		delete python_script_process;
+		// ********** set the current item of the list view to the current index and download the images for this color **********
+		ui_.color_name_list->setCurrentRow(color_index);
+		downloadImages();
 	}
 }
 
@@ -185,11 +194,20 @@ void labelizer::LabelizerPlugin::startLabeleingImages()
 
 	// ********** get the number of images that have been downloaded **********
 	QDir directory(QString::fromStdString(folder_path));
-	ui_.dwnld_progress_bar->setValue(0.0);
 	if(directory.exists()==true)
 	{
+		// ------- get the total number of valid files -------
 		number_of_files_ = directory.count()-2; // -2 because the upper directories are also counted
-		labeled_images_ = 0.0;
+
+		// ------- get the number of already labeled images -------
+		directory.setNameFilters(QStringList()<<"*_mask*");
+		labeled_images_ = directory.count();
+
+		// ------- show the so far achieved progress, if there are any files -------
+		if(number_of_files_!=0)
+		{
+			ui_.dwnld_progress_bar->setValue(100*labeled_images_/number_of_files_);
+		}
 	}
 	else
 	{
@@ -203,13 +221,12 @@ void labelizer::LabelizerPlugin::startLabeleingImages()
 	}
 
 	// ********** display the first valid image **********
-	image_index_ = 0;
+	image_index_ = ui_.image_index_spin->value();
 	bool loaded_image=false;
 	do
 	{
 		// ------- try to load the next image and check if it is a valid image (the download script might download not displayable images) -------
 		std::stringstream file_path;
-		++image_index_;
 		file_path << folder_path << image_index_ << ".jpg";
 		displayImage(QString::fromStdString(file_path.str()));
 
@@ -229,6 +246,9 @@ void labelizer::LabelizerPlugin::startLabeleingImages()
 	selected_x_ = image_.cols/2;
 	selected_y_ = image_.rows/2;
 	selectImagePixels(selected_x_, selected_y_);
+
+	// ********** update the index-indicator display **********
+	ui_.image_index_spin->setValue(image_index_);
 }
 
 /*
@@ -236,8 +256,16 @@ void labelizer::LabelizerPlugin::startLabeleingImages()
  */
 void labelizer::LabelizerPlugin::labelNextImage()
 {
-	// ********** update the progressbar **********
-	++labeled_images_;
+	// ********** update the progressbar (if the mask is not existing yet) **********
+	std::string color_name = ui_.color_name_list->currentItem()->text().toUtf8().constData();
+	std::string folder_path = ros::package::getPath("labelizer") + "/python/" + color_name + "/";
+	std::stringstream image_path;
+	image_path << folder_path << image_index_ << "_mask.jpg" ;
+	QFile mask_file(QString::fromStdString(image_path.str()));
+	if(mask_file.exists()==false)
+	{
+		++labeled_images_;
+	}
 	if(number_of_files_!=0)
 	{
 		ui_.dwnld_progress_bar->setValue(100*labeled_images_/number_of_files_);
@@ -249,10 +277,6 @@ void labelizer::LabelizerPlugin::labelNextImage()
 	}
 
 	// ********** store the currently segmented image **********
-	std::string color_name = ui_.color_name_list->currentItem()->text().toUtf8().constData();
-	std::string folder_path = ros::package::getPath("labelizer") + "/python/" + color_name + "/";
-	std::stringstream image_path;
-	image_path << folder_path << image_index_ << "_mask.jpg" ;
 	cv::imwrite(image_path.str().c_str(), segmented_image_);
 
 	// ********** load the next valid image **********
@@ -281,6 +305,9 @@ void labelizer::LabelizerPlugin::labelNextImage()
 	selected_x_ = image_.cols/2;
 	selected_y_ = image_.rows/2;
 	selectImagePixels(selected_x_, selected_y_);
+
+	// ********** update the index-indicator display **********
+	ui_.image_index_spin->setValue(image_index_);
 }
 
 void labelizer::LabelizerPlugin::saveNegativeLabelImage()
@@ -381,10 +408,22 @@ void labelizer::LabelizerPlugin::newPixelSelected(const double x_coordinate, con
  */
 void labelizer::LabelizerPlugin::selectImagePixels(const double x_coordinate, const double y_coordinate)
 {
-	// ********** ensure that the click was inside the image **********
+	// ********** ensure that the coordinates are inside the image **********
+	double x, y;
 	if(x_coordinate<0 || y_coordinate<0 || x_coordinate>image_.cols || y_coordinate>image_.rows)
 	{
-		return;
+		// ------- if this is not the case, use the one that have been set with a click -------
+		if(selected_x_>=0 && selected_x_<image_.cols && selected_x_>=0 && selected_y_<image_.rows )
+		{
+			x = selected_x_;
+			y = selected_y_;
+		}
+	}
+	else
+	{
+		// ------- use the given coordinates -------
+		x = x_coordinate;
+		y = y_coordinate;
 	}
 
 	// ********** convert the image to the HSV-space **********
@@ -392,7 +431,7 @@ void labelizer::LabelizerPlugin::selectImagePixels(const double x_coordinate, co
 	cv::cvtColor(image_, hsv_image, CV_BGR2HSV);
 
 	// ********** get the HSV-value of the clicked pixel **********
-	cv::Vec3b pixel_value = hsv_image.at<cv::Vec3b>(y_coordinate, x_coordinate);
+	cv::Vec3b pixel_value = hsv_image.at<cv::Vec3b>(y, x);
 
 	// ********** get the lower and upper bound, depending on the defined sigma values **********
 	cv::Scalar lower_values = cv::Scalar(pixel_value[0]-H_lower_, pixel_value[1]-S_lower_, pixel_value[2]-V_lower_);

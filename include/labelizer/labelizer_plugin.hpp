@@ -162,6 +162,11 @@ protected slots:
 	void downloadImages();
 
 	/**
+	 * @brief downloadAllImages downloads images from google-images that come up when searching for every given color.
+	 */
+	void downloadAllImages();
+
+	/**
 	 * @brief startLabeleingImages starts the labeling process for the currently selected color.
 	 */
 	void startLabeleingImages();
