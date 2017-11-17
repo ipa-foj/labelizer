@@ -12,6 +12,7 @@
 #include <QString>
 #include <QSize>
 #include <QPixmap>
+#include <QImage>
 #include <QDir>
 #include <QProcess>
 #include <QGraphicsScene>
@@ -85,12 +86,30 @@ void labelizer::LabelizerPlugin::initPlugin(qt_gui_cpp::PluginContext &context)
 
 	// ********** set up the frame widget that shows the to-be-labeled images and an empty opencv-image **********
 	image_scene_ = new MouseQScene(this);
+	segmented_image_scene_ = new MouseQScene(this);
 	image_ = cv::Mat();
+
+	// ********** initially set the channel-sigmas to 0 **********
+	H_lower_ = 0.0;
+	H_upper_ = 0.0;
+	S_lower_ = 0.0;
+	S_upper_ = 0.0;
+	V_lower_ = 0.0;
+	V_upper_ = 0.0;
 
 	// ********** connect signals and slots **********
 	connect(ui_.dwnld_btn, SIGNAL(pressed()), this, SLOT(downloadImages()));
-	connect(ui_.start_btn, SIGNAL(pressed()), this, SLOT(labelImages()));
-	connect(image_scene_, SIGNAL(imageClicked(double,double)), this, SLOT(showClickCoordinates(double,double)));
+	connect(ui_.start_btn, SIGNAL(pressed()), this, SLOT(startLabeleingImages()));
+	connect(ui_.finished_btn, SIGNAL(pressed()), this, SLOT(labelNextImage()));
+	connect(ui_.skip_btn, SIGNAL(pressed()), this, SLOT(saveNegativeLabelImage()));
+	connect(image_scene_, SIGNAL(imageClicked(double,double)), this, SLOT(newPixelSelected(double,double)));
+	connect(image_scene_, SIGNAL(mouseOnImage(double,double)), this,  SLOT(selectImagePixels(double,double)));
+	connect(ui_.H_spin_lower, SIGNAL(valueChanged(double)), this, SLOT(sigmaHLbChanged(double)));
+	connect(ui_.H_spin_upper, SIGNAL(valueChanged(double)), this, SLOT(sigmaHUbChanged(double)));
+	connect(ui_.S_spin_lower, SIGNAL(valueChanged(double)), this, SLOT(sigmaSLbChanged(double)));
+	connect(ui_.S_spin_upper, SIGNAL(valueChanged(double)), this, SLOT(sigmaSUbChanged(double)));
+	connect(ui_.V_spin_lower, SIGNAL(valueChanged(double)), this, SLOT(sigmaVLbChanged(double)));
+	connect(ui_.V_spin_upper, SIGNAL(valueChanged(double)), this, SLOT(sigmaVUbChanged(double)));
 }
 
 
@@ -101,6 +120,7 @@ void labelizer::LabelizerPlugin::shutdownPlugin()
 {
 	// ********** delete the pointers **********
 	delete image_scene_;
+	delete segmented_image_scene_;
 }
 
 /*
@@ -151,27 +171,237 @@ void labelizer::LabelizerPlugin::downloadImages()
 /*
  * Function that starts the labeling process for the currently selected color.
  */
-void labelizer::LabelizerPlugin::labelImages()
+void labelizer::LabelizerPlugin::startLabeleingImages()
 {
-	// get the current color that should be searched and the path to the folder in which the images are stored
+	// ********** get the current color that should be searched and the path to the folder in which the images are stored **********
 	std::string color_name = ui_.color_name_list->currentItem()->text().toUtf8().constData();
 	std::string folder_path = ros::package::getPath("labelizer") + "/python/" + color_name + "/";
 
-	// display the first image
-	displayImage(QString::fromStdString(folder_path+"1.jpg"));
-
-	// get the number of images that have been downloaded
+	// ********** get the number of images that have been downloaded **********
 	QDir directory(QString::fromStdString(folder_path));
-	int number_of_files = directory.count()-2; // -2 because the upper directories are also counted
-	ui_.dwnld_progress_bar->setValue(number_of_files/10);
+	ui_.dwnld_progress_bar->setValue(0.0);
+	if(directory.exists()==true)
+	{
+		number_of_files_ = directory.count()-2; // -2 because the upper directories are also counted
+		labeled_images_ = 0.0;
+	}
+	else
+	{
+		return;
+	}
+
+	// ********** if there is no valid image, don't try to load one **********
+	if(number_of_files_==0)
+	{
+		return;
+	}
+
+	// ********** display the first valid image **********
+	image_index_ = 0;
+	bool loaded_image=false;
+	do
+	{
+		// ------- try to load the next image and check if it is a valid image (the download script might download not displayable images) -------
+		std::stringstream file_path;
+		++image_index_;
+		file_path << folder_path << image_index_ << ".jpg";
+		displayImage(QString::fromStdString(file_path.str()));
+
+		// ------- check if the loaded image has a size larger than 0 -------
+		if(image_.cols!=0 && image_.rows!=0)
+		{
+			loaded_image = true;
+		}
+		else
+		{
+			// ------- set the next file index -------
+			++image_index_;
+		}
+	}while(loaded_image==false);
+
+	// ********** initially set the selected pixel to the center of the image **********
+	selected_x_ = image_.cols/2;
+	selected_y_ = image_.rows/2;
+	selectImagePixels(selected_x_, selected_y_);
 }
 
-void labelizer::LabelizerPlugin::showClickCoordinates(const double x, const double y)
+/*
+ * Function that saves the currently segmented image and loads the next one that should be labeled.
+ */
+void labelizer::LabelizerPlugin::labelNextImage()
 {
-	std::stringstream text_string;
-	text_string << "(" << x << " | " << y << ")";
-	QString text = QString::fromStdString(text_string.str());
-	ui_.color_region->setText(text);
+	// ********** update the progressbar **********
+	++labeled_images_;
+	if(number_of_files_!=0)
+	{
+		ui_.dwnld_progress_bar->setValue(100*labeled_images_/number_of_files_);
+	}
+	else
+	{
+		// ------- if no valid file has been downloaded, don't try to save/load any image, because there is none -------
+		return;
+	}
+
+	// ********** store the currently segmented image **********
+	std::string color_name = ui_.color_name_list->currentItem()->text().toUtf8().constData();
+	std::string folder_path = ros::package::getPath("labelizer") + "/python/" + color_name + "/";
+	std::stringstream image_path;
+	image_path << folder_path << image_index_ << "_mask.jpg" ;
+	cv::imwrite(image_path.str().c_str(), segmented_image_);
+
+	// ********** load the next valid image **********
+	bool loaded_image=false;
+	do
+	{
+		// ------- try to load the next image and check if it is a valid image (the download script might download not displayable images) -------
+		std::stringstream file_path;
+		++image_index_;
+		file_path << folder_path << image_index_ << ".jpg";
+		displayImage(QString::fromStdString(file_path.str()));
+
+		// ------- check if the loaded image has a size larger than 0 -------
+		if(image_.cols!=0 && image_.rows!=0)
+		{
+			loaded_image = true;
+		}
+		else
+		{
+			// ------- set the next file index -------
+			++image_index_;
+		}
+	}while(loaded_image==false);
+
+	// ********** initially set the selected pixel to the center of the image **********
+	selected_x_ = image_.cols/2;
+	selected_y_ = image_.rows/2;
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+void labelizer::LabelizerPlugin::saveNegativeLabelImage()
+{
+	// ********** set the segmented image to be a black image **********
+	segmented_image_ = cv::Mat(image_.rows, image_.cols, image_.type(), cv::Scalar(0));
+
+	// ********** load the next valid image **********
+	labelNextImage();
+}
+
+/*
+ * Slot (callback function) that is called, whenever the lower bound indicator for the H-channel is changed.
+ */
+void labelizer::LabelizerPlugin::sigmaHLbChanged(const double sigma)
+{
+	// ********** set the new bound **********
+	H_lower_ = sigma;
+
+	// ********** search every pixel with the new bounds for the currently selected pixel **********
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+/*
+ * Slot (callback function) that is called, whenever the upper bound indicator for the H-channel is changed.
+ */
+void labelizer::LabelizerPlugin::sigmaHUbChanged(const double sigma)
+{
+	// ********** set the new bound indicator **********
+	H_upper_ = sigma;
+
+	// ********** search every pixel with the new bounds for the currently selected pixel **********
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+/*
+ * Slot (callback function) that is called, whenever the lower bound indicator for the S-channel is changed.
+ */
+void labelizer::LabelizerPlugin::sigmaSLbChanged(const double sigma)
+{
+	// ********** set the new bound indicator **********
+	S_lower_ = sigma;
+
+	// ********** search every pixel with the new bounds for the currently selected pixel **********
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+/*
+ * Slot (callback function) that is called, whenever the upper bound indicator for the S-channel is changed.
+ */
+void labelizer::LabelizerPlugin::sigmaSUbChanged(const double sigma)
+{
+	// ********** set the new bound indicator **********
+	S_upper_ = sigma;
+
+	// ********** search every pixel with the new bounds for the currently selected pixel **********
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+/*
+ * Slot (callback function) that is called, whenever the lower bound indicator for the V-channel is changed.
+ */
+void labelizer::LabelizerPlugin::sigmaVLbChanged(const double sigma)
+{
+	// ********** set the new bound indicator **********
+	V_lower_ = sigma;
+
+	// ********** search every pixel with the new bounds for the currently selected pixel **********
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+/*
+ * Slot (callback function) that is called, whenever the upper bound indicator for the V-channel is changed.
+ */
+void labelizer::LabelizerPlugin::sigmaVUbChanged(const double sigma)
+{
+	// ********** set the new bound indicator **********
+	V_upper_ = sigma;
+
+	// ********** search every pixel with the new bounds for the currently selected pixel **********
+	selectImagePixels(selected_x_, selected_y_);
+}
+
+/*
+ * Function that is called, whenever a new pixel is selected.
+ */
+void labelizer::LabelizerPlugin::newPixelSelected(const double x_coordinate, const double y_coordinate)
+{
+	// ********** store the new pixel coordinates **********
+	selected_x_ = x_coordinate;
+	selected_y_ = y_coordinate;
+}
+
+/*
+ * Function that gets the HSV-value at a given pixel and finds every pixel in the image, that has a HSV-value in the defined range
+ * around the value of the selected pixel. It marks such pixels in a binary image as white and every other pixel as black and
+ * shows the resulting mask to the user.
+ */
+void labelizer::LabelizerPlugin::selectImagePixels(const double x_coordinate, const double y_coordinate)
+{
+	// ********** ensure that the click was inside the image **********
+	if(x_coordinate<0 || y_coordinate<0 || x_coordinate>image_.cols || y_coordinate>image_.rows)
+	{
+		return;
+	}
+
+	// ********** convert the image to the HSV-space **********
+	cv::Mat hsv_image=image_.clone();
+	cv::cvtColor(image_, hsv_image, CV_BGR2HSV);
+
+	// ********** get the HSV-value of the clicked pixel **********
+	cv::Vec3b pixel_value = hsv_image.at<cv::Vec3b>(y_coordinate, x_coordinate);
+
+	// ********** get the lower and upper bound, depending on the defined sigma values **********
+	cv::Scalar lower_values = cv::Scalar(pixel_value[0]-H_lower_, pixel_value[1]-S_lower_, pixel_value[2]-V_lower_);
+	cv::Scalar upper_values = cv::Scalar(pixel_value[0]+H_upper_, pixel_value[1]+S_upper_, pixel_value[2]+V_upper_);
+
+	// ********** go through the stored image and collect every pixel that is in the defined region around the clicked pixel-color **********
+	cv::inRange(hsv_image, lower_values, upper_values, segmented_image_);
+
+	// ********** display the segmented image **********
+	QPixmap segmented_pic = QPixmap::fromImage(QImage(segmented_image_.data, segmented_image_.cols,
+													  segmented_image_.rows, segmented_image_.step, QImage::Format_Indexed8));
+	segmented_image_scene_->clear();
+	segmented_image_scene_->addPixmap(segmented_pic);
+	segmented_image_scene_->setSceneRect(segmented_pic.rect());
+	ui_.segmented_frame->setScene(segmented_image_scene_);
 }
 
 
