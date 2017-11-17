@@ -10,7 +10,7 @@
 labelizer::MouseQScene::MouseQScene(QObject* parent)
 	: QGraphicsScene(parent)
 {
-	// initially set up the click-coordinates
+	// ********** initially set up the click-coordinates **********
 	x_ = 0;
 	y_ = 0;
 }
@@ -26,6 +26,16 @@ void labelizer::MouseQScene::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 
 	// ********** emmit the signal that will publish the coordinates to other QObjects **********
 	emit imageClicked(x_, y_);
+}
+
+/*
+ * Function that handles the event that the mouse pointer is inside the image frame. It takes the x/y-coordinates of it and
+ * passes them to a handler-function in the parent GUI.
+ */
+void labelizer::MouseQScene::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+	// ********** emit the signal that will publish the coordinates to other QObjects **********
+	emit mouseOnImage(ev->scenePos().x(), ev->scenePos().y());
 }
 
 /*

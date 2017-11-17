@@ -71,7 +71,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QGraphicsView" name="image_frame"/>
+        <widget class="QGraphicsView" name="image_frame">
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGraphicsView" name="segmented_frame"/>
        </item>
       </layout>
      </item>
@@ -117,6 +124,9 @@
          <property name="value">
           <number>0</number>
          </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
        <item>
@@ -148,25 +158,30 @@
           </size>
          </property>
          <property name="text">
-          <string>Sigma R</string>
+          <string>Sigma H</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="sigma_R_slider">
-         <property name="maximumSize">
-          <size>
-           <width>400</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="maximum">
-          <number>127</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QDoubleSpinBox" name="H_spin_lower">
+           <property name="maximum">
+            <double>180.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="H_spin_upper">
+           <property name="minimum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>180.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="G_slider_label">
@@ -177,25 +192,27 @@
           </size>
          </property>
          <property name="text">
-          <string>Sigma G</string>
+          <string>Sigma S</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="sigma_G_slider">
-         <property name="maximumSize">
-          <size>
-           <width>400</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="maximum">
-          <number>127</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QDoubleSpinBox" name="S_spin_lower">
+           <property name="maximum">
+            <double>255.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="S_spin_upper">
+           <property name="maximum">
+            <double>255.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="B_slider_label">
@@ -206,25 +223,33 @@
           </size>
          </property>
          <property name="text">
-          <string>Sigma B</string>
+          <string>Sigma V</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="sigma_B_slider">
-         <property name="maximumSize">
-          <size>
-           <width>400</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="maximum">
-          <number>127</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QDoubleSpinBox" name="V_spin_lower">
+           <property name="maximum">
+            <double>255.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="V_spin_upper">
+           <property name="minimum">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>255.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QPushButton" name="finished_btn">

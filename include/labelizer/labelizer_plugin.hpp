@@ -71,9 +71,74 @@ protected:
 	MouseQScene* image_scene_;
 
 	/**
+	 * @brief segmented_image_scene_ stores the scene that shows the segmented image, based on the HSV-range.
+	 */
+	MouseQScene* segmented_image_scene_;
+
+	/**
 	 * @brief image_ stores the current displayed image as opencv-image, s.t. it can be handled easily.
 	 */
 	cv::Mat image_;
+
+	/**
+	 * @brief segmented_image_ stores the image mask, that shows every currently selected pixel (in white).
+	 */
+	cv::Mat segmented_image_;
+
+	/**
+	 * @brief H_lower_ allowed subtraction of the H-channel for searching for similar pixels.
+	 */
+	double H_lower_;
+
+	/**
+	 * @brief H_upper_ allowed addition of the H-channel for searching for similar pixels.
+	 */
+	double H_upper_;
+
+	/**
+	 * @brief S_lower_ allowed subtraction of the S-channel for searching for similar pixels.
+	 */
+	double S_lower_;
+
+	/**
+	 * @brief S_upper_ allowed addition of the S-channel for searching for similar pixels.
+	 */
+	double S_upper_;
+
+	/**
+	 * @brief V_lower_ allowed subtraction of the V-channel for searching for similar pixels.
+	 */
+	double V_lower_;
+
+	/**
+	 * @brief V_upper_ allowed addition of the V-channel for searching for similar pixels.
+	 */
+	double V_upper_;
+
+	/**
+	 * @brief selected_x_ stores the x-coordinate of the currently selected pixel.
+	 */
+	int selected_x_;
+
+	/**
+	 * @brief selected_y_ stores the y-coordinate of the currently selected pixel.
+	 */
+	int selected_y_;
+
+	/**
+	 * @brief number_of_files_ stores the number of valid files that have been downloaded for a color.
+	 */
+	double number_of_files_;
+
+	/**
+	 * @brief labeled_images_ stores the number of images that have already been labeled by the user.
+	 */
+	double labeled_images_;
+
+	/**
+	 * @brief image_index_ stores the index of the current image, that should be labeled.
+	 */
+	int image_index_;
 
 	/**
 	 * @brief displayImage displays the image that is stored in the given absolute path in the GUI.
@@ -97,15 +162,75 @@ protected slots:
 	void downloadImages();
 
 	/**
-	 * @brief labelImages starts the labeling process for the currently selected color.
+	 * @brief startLabeleingImages starts the labeling process for the currently selected color.
 	 */
-	void labelImages();
+	void startLabeleingImages();
 
 	/**
-	 * @brief showClickCoordinates is a test function to check if the click-tracking worked.
-	 * @todo remove
+	 * @brief labelNextImage saves the currently labeled image and displays the next one.
 	 */
-	void showClickCoordinates(const double x, const double y);
+	void labelNextImage();
+
+	/**
+	 * @brief saveNegativeLabelImage is called, whenever the user says that the to-be-searched color is not
+	 * contained in the current image. The function then saves an empty mask, showing that no pixel belongs to
+	 * the current color and loads the next valid image.
+	 */
+	void saveNegativeLabelImage();
+
+	/**
+	 * @brief sigmaHLbChanged is the slot (callback function) for setting the lower bound of the H-channel.
+	 * @param sigma the new to-be-set bound.
+	 */
+	void sigmaHLbChanged(const double sigma);
+
+	/**
+	 * @brief sigmaHUbChanged is the slot (callback function) for setting the upper bound of the H-channel.
+	 * @param sigma the new to-be-set bound.
+	 */
+	void sigmaHUbChanged(const double sigma);
+
+	/**
+	 * @brief sigmaSLbChanged is the slot (callback function) for setting the lower bound of the S-channel.
+	 * @param sigma the new to-be-set bound.
+	 */
+	void sigmaSLbChanged(const double sigma);
+
+	/**
+	 * @brief sigmaSUbChanged is the slot (callback function) for setting the upper bound of the S-channel.
+	 * @param sigma the new to-be-set bound.
+	 */
+	void sigmaSUbChanged(const double sigma);
+
+	/**
+	 * @brief sigmaVLbChanged is the slot (callback function) for setting the lower bound of the V-channel.
+	 * @param sigma the new to-be-set bound.
+	 */
+	void sigmaVLbChanged(const double sigma);
+
+	/**
+	 * @brief sigmaVUbChanged is the slot (callback function) for setting the upper bound of the V-channel.
+	 * @param sigma the new to-be-set bound.
+	 */
+	void sigmaVUbChanged(const double sigma);
+
+	/**
+	 * @brief newPixelSelected is the slot (callback function) that gets the x/y-coordinates of a pixel that is selected for the
+	 * color search, i.e. the pixel that sets the original HSV-value for the range latter range selection.
+	 * @param x_coordinate: double, storing the x-coordinate of the selected pixel
+	 * @param y_coordinate: double, storing the y-coordinate of the selected pixel
+	 */
+	void newPixelSelected(const double x_coordinate, const double y_coordinate);
+
+	/**
+	 * @brief selectImagePixels is the slot (callback function) that gets the HSV-value of a current pixel and searches for pixels
+	 * that are in the set range around this HSV-value. It marks such pixels in a binary image as white and every other pixel as
+	 * black and shows the resulting mask to the user.
+	 * @param x_coordinate: The x-coordinate of the current pixel.
+	 * @param y_coordinate: The y-coordinate of the current pixel.
+	 */
+	void selectImagePixels(const double x_coordinate, const double y_coordinate);
+
 };
 
 } // end of namespace labelizer

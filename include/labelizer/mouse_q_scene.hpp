@@ -23,11 +23,20 @@ class MouseQScene : public QGraphicsScene
 signals:
 
 	/**
-	 * @brief imageClicked is a signal that is emmitted, every time the image is clicked. It returns the x/y-coordinates of the click.
+	 * @brief imageClicked is a signal that is emmitted (called), every time the image is clicked. It takes the x/y-coordinates of the click and
+	 * passes them to the connected slot in the GUI.
 	 * @param x_coordinate: The x-coordinate of the click.
 	 * @param y_coordinate: The y-coordinate of the click.
 	 */
 	void imageClicked(const double x_coordinate, const double y_coordinate);
+
+	/**
+	 * @brief mouseOnImage is a signal that is emmitted (called), every time the mouse pointer is on the scene. It takes the x/y-coordinates of the
+	 * pointer and passes them to the connected slot in the GUI.
+	 * @param x_coordinate
+	 * @param y_coordinate
+	 */
+	void mouseOnImage(const double x_coordinate, const double y_coordinate);
 
 protected:
 
@@ -53,6 +62,12 @@ public:
 	 * @param ev: The object carrying the event, i.e. the mouse click.
 	 */
 	void mousePressEvent(QGraphicsSceneMouseEvent* ev);
+
+	/**
+	 * @brief mouseMoveEvent
+	 * @param ev
+	 */
+	void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
 
 	/**
 	 * @brief getXCoordinate returns the stored x-coordinate of the last click.
