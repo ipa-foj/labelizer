@@ -100,18 +100,28 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="color_region">
+       <item alignment="Qt::AlignHCenter">
+        <widget class="QGraphicsView" name="sample_frame">
          <property name="maximumSize">
           <size>
-           <width>400</width>
-           <height>16777215</height>
+           <width>150</width>
+           <height>150</height>
           </size>
          </property>
-         <property name="text">
-          <string/>
-         </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QProgressBar" name="dwnld_progress_bar">

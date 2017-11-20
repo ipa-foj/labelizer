@@ -16,7 +16,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QGraphicsScene>
-#include <QDebug>
+#include <QFileInfo>
 
 // Plugin-export libraries --> needed when building a rqt-plugin in c++
 #include <pluginlib/class_list_macros.h>
@@ -87,6 +87,7 @@ void labelizer::LabelizerPlugin::initPlugin(qt_gui_cpp::PluginContext &context)
 
 	// ********** set up the frame widget that shows the to-be-labeled images and an empty opencv-image **********
 	image_scene_ = new MouseQScene(this);
+	sample_scene_ = new MouseQScene(this);
 	segmented_image_scene_ = new MouseQScene(this);
 	image_ = cv::Mat();
 
@@ -122,28 +123,42 @@ void labelizer::LabelizerPlugin::shutdownPlugin()
 {
 	// ********** delete the pointers **********
 	delete image_scene_;
+	delete sample_scene_;
 	delete segmented_image_scene_;
 }
 
 /*
  * Function that converts the given cv::Mat image into a QImage and displays it in the image frame of the user-interface.
  */
-void labelizer::LabelizerPlugin::displayImage(const QString& image_path)
+void labelizer::LabelizerPlugin::displayImage(const QString& image_path, bool sample)
 {
-	// ********** load the image as opencv image for further handling **********
-	image_ = cv::imread(image_path.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
-
-	// ********** show the image in the GUI **********
-	image_scene_->clear();
-	if(image_.rows!=0 && image_.cols!=0)
+	// ********** check if the image should be displayed in the sample frame **********
+	if(sample==false)
 	{
-		cv::Mat rgb_image;
-		cv::cvtColor(image_, rgb_image, CV_BGR2RGB);
-		QPixmap pic = QPixmap::fromImage(QImage(rgb_image.data, rgb_image.cols,
-												rgb_image.rows, rgb_image.step, QImage::Format_RGB888));
-		image_scene_->addPixmap(pic);
-		image_scene_->setSceneRect(pic.rect());
-		ui_.image_frame->setScene(image_scene_);
+		// ********** load the image as opencv image for further handling **********
+		image_ = cv::imread(image_path.toUtf8().constData(), CV_LOAD_IMAGE_COLOR);
+
+		// ********** show the image in the GUI **********
+		image_scene_->clear();
+		if(image_.rows!=0 && image_.cols!=0)
+		{
+			cv::Mat rgb_image;
+			cv::cvtColor(image_, rgb_image, CV_BGR2RGB);
+			QPixmap pic = QPixmap::fromImage(QImage(rgb_image.data, rgb_image.cols,
+													rgb_image.rows, rgb_image.step, QImage::Format_RGB888));
+			image_scene_->addPixmap(pic);
+			image_scene_->setSceneRect(pic.rect());
+			ui_.image_frame->setScene(image_scene_);
+		}
+	}
+	else
+	{
+		// ********** show the image in the GUI **********
+		sample_scene_->clear();
+		QPixmap pic(image_path);
+		sample_scene_->addPixmap(pic);
+		sample_scene_->setSceneRect(pic.rect());
+		ui_.sample_frame->setScene(sample_scene_);
 	}
 }
 
@@ -190,7 +205,8 @@ void labelizer::LabelizerPlugin::startLabeleingImages()
 {
 	// ********** get the current color that should be searched and the path to the folder in which the images are stored **********
 	std::string color_name = ui_.color_name_list->currentItem()->text().toUtf8().constData();
-	std::string folder_path = ros::package::getPath("labelizer") + "/python/" + color_name + "/";
+	std::string labelizer_package_path = ros::package::getPath("labelizer");
+	std::string folder_path = labelizer_package_path + "/python/" + color_name + "/";
 
 	// ********** get the number of images that have been downloaded **********
 	QDir directory(QString::fromStdString(folder_path));
@@ -249,6 +265,23 @@ void labelizer::LabelizerPlugin::startLabeleingImages()
 
 	// ********** update the index-indicator display **********
 	ui_.image_index_spin->setValue(image_index_);
+
+	// ********** show the example image, if it exists **********
+	std::string example_path = labelizer_package_path + "/files/" + color_name + ".png";
+	QString example_image_path = QString::fromStdString(example_path);
+	QFileInfo sample_image(example_image_path);
+	if(sample_image.exists()==true)
+	{
+		// ------- the sample file exists, show it -------
+		displayImage(example_image_path, true);
+	}
+	else
+	{
+		// ------- there was no sample image provided, display an indicator image to show this -------
+		example_path = labelizer_package_path + "/files/no_img.png";
+		example_image_path = QString::fromStdString(example_path);
+		displayImage(example_image_path, true);
+	}
 }
 
 /*

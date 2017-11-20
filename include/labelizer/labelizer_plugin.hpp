@@ -71,6 +71,11 @@ protected:
 	MouseQScene* image_scene_;
 
 	/**
+	 * @brief sample_scene_ stores the scene that shows the sample image in the GUI.
+	 */
+	MouseQScene* sample_scene_;
+
+	/**
 	 * @brief segmented_image_scene_ stores the scene that shows the segmented image, based on the HSV-range.
 	 */
 	MouseQScene* segmented_image_scene_;
@@ -143,8 +148,9 @@ protected:
 	/**
 	 * @brief displayImage displays the image that is stored in the given absolute path in the GUI.
 	 * @param image_path: A QString that carries the absolute path to the image that should be displayed.
+	 * @param sample: Boolean showing if the given image should be displayed in the sample frame.
 	 */
-	void displayImage(const QString& image_path);
+	void displayImage(const QString& image_path, bool sample=false);
 
 	/**
 	 * @brief color_search_keyowrds_ is a vector that stores the keywords, which will be added to the color name
