@@ -188,9 +188,12 @@ void labelizer::LabelizerPlugin::downloadImages()
 	delete python_script_process;
 }
 
+/*
+ * Function that downloads the images for every listed color, starting from the one that currently is selected.
+ */
 void labelizer::LabelizerPlugin::downloadAllImages()
 {
-	for(int color_index=0; color_index<ui_.color_name_list->count(); ++color_index)
+	for(int color_index=ui_.color_name_list->currentRow(); color_index<ui_.color_name_list->count(); ++color_index)
 	{
 		// ********** set the current item of the list view to the current index and download the images for this color **********
 		ui_.color_name_list->setCurrentRow(color_index);
@@ -326,6 +329,11 @@ void labelizer::LabelizerPlugin::labelNextImage()
 		if(image_.cols!=0 && image_.rows!=0)
 		{
 			loaded_image = true;
+		}
+		else if(image_index_>=number_of_files_)
+		{
+			// ------- at the end, don't try to load any image -------
+			return;
 		}
 		else
 		{

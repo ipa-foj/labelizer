@@ -4,6 +4,7 @@ Changelog for package labelizer
 0.1.2 (2017-11-17)
 ------------------
 * GUI can now display sample images
+* resume download from selected color item
 * Contributors: Florian Jordan
 
 0.1.1 (2017-11-17)

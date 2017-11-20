@@ -124,22 +124,6 @@
         </spacer>
        </item>
        <item>
-        <widget class="QProgressBar" name="dwnld_progress_bar">
-         <property name="maximumSize">
-          <size>
-           <width>400</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-         <property name="invertedAppearance">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="dwnld_clr_btn">
          <property name="maximumSize">
           <size>
@@ -153,7 +137,29 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="all_dwnld_label">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Download images for every item, starting from the currently selected one</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="dwnld_all_btn">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Download all images</string>
          </property>
@@ -179,6 +185,22 @@
          </property>
          <property name="maximum">
           <number>999999999</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="dwnld_progress_bar">
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+         <property name="invertedAppearance">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
