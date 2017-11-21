@@ -319,6 +319,13 @@ void labelizer::LabelizerPlugin::labelNextImage()
 	bool loaded_image=false;
 	do
 	{
+		if(image_index_>=number_of_files_)
+		{
+			// ------- at the end, don't try to load any image and reset the image index -------
+			ui_.image_index_spin->setValue(1);
+			return;
+		}
+
 		// ------- try to load the next image and check if it is a valid image (the download script might download not displayable images) -------
 		std::stringstream file_path;
 		++image_index_;
@@ -329,11 +336,6 @@ void labelizer::LabelizerPlugin::labelNextImage()
 		if(image_.cols!=0 && image_.rows!=0)
 		{
 			loaded_image = true;
-		}
-		else if(image_index_>=number_of_files_)
-		{
-			// ------- at the end, don't try to load any image -------
-			return;
 		}
 		else
 		{
