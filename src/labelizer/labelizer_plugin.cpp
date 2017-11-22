@@ -337,11 +337,6 @@ void labelizer::LabelizerPlugin::labelNextImage()
 		{
 			loaded_image = true;
 		}
-		else
-		{
-			// ------- set the next file index -------
-			++image_index_;
-		}
 	}while(loaded_image==false);
 
 	// ********** initially set the selected pixel to the center of the image **********
@@ -467,6 +462,12 @@ void labelizer::LabelizerPlugin::selectImagePixels(const double x_coordinate, co
 		// ------- use the given coordinates -------
 		x = x_coordinate;
 		y = y_coordinate;
+	}
+
+	// ********** don't try to select pixels, if no image has been loaded **********
+	if(image_.cols==0 && image_.rows==0)
+	{
+		return;
 	}
 
 	// ********** convert the image to the HSV-space **********
