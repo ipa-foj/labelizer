@@ -24,19 +24,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 ## Find several needed libraries
+# Qt development library
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   find_package(Qt5Widgets REQUIRED)
 else()
   find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
   include(${QT_USE_FILE})
 endif()
+# pkg-config package to include packages that don't provide a cmake config file
 find_package(PkgConfig REQUIRED)
+# jsoncpp --> json parser
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})
-
-#find_package(Boost REQUIRED COMPONENTS system chrono thread)
-#find_package(OpenCV REQUIRED)
-#find_package(Eigen REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -80,6 +79,10 @@ else()
   qt4_wrap_cpp(rqt_cpp_MOCS ${rqt_cpp_HDRS})
   qt4_wrap_ui(rqt_cpp_UIS_HPP ${rqt_cpp_UIS})
 endif()
+
+# Add custom (non compiling) targets so launch scripts and python files show up in QT Creator's project view.
+file(GLOB_RECURSE EXTRA_FILES */*)
+add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
 
 ###########
 ## Build ##

@@ -152,10 +152,13 @@ while i<len(search_keyword):
             req = Request(items[k], headers={"User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
             response = urlopen(req,None,15)
             output_file = open(pkg_path+'/python/'+search_keywords+"/"+str(k+1)+".jpg",'wb')
-            
-            data = response.read()
-            output_file.write(data)
-            response.close();
+
+            try:
+                data = response.read()
+                output_file.write(data)
+            except:
+                print "reading error"
+            response.close()
 
             print("completed ====> "+str(k+1))
 

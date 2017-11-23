@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 	<package format="2">
 	<name>labelizer</name>
-	<version>0.1.0</version>
+	<version>0.1.2</version>
 	<description>
 		This package provides a simple GUI to label different images to allow to use them as training datas for machine learning algorithms.
 	</description>
@@ -13,7 +13,7 @@
 
 	<depend>cmake_modules</depend>
 	<depend>cv_bridge</depend>
-	<depend>jsoncpp</depend>
+	<depend>libjsoncpp-dev</depend>
 	<depend>roscpp</depend>
 	<depend>rospy</depend>
 	<depend>roslib</depend>

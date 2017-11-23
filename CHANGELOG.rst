@@ -1,6 +1,19 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package labelizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+0.1.2 (2017-11-17)
+------------------
+* GUI can now display sample images
+* resume download from selected color item
+* Contributors: Florian Jordan
+
+0.1.1 (2017-11-17)
+------------------
+* catches wrong storage of .png as .jpg
+* can resume labeling from the previously last image
+* able to download files for one class or for every defined class
+* Contributors: Florian Jordan
+
 0.1.0 (2017-11-17)
 ------------------
 * first working version, using a HSV-range based selection of pixels
