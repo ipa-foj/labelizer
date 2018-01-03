@@ -17,15 +17,13 @@
 #include <QProcess>
 #include <QGraphicsScene>
 #include <QFileInfo>
+#include <QDebug>
 
 // Plugin-export libraries --> needed when building a rqt-plugin in c++
 #include <pluginlib/class_list_macros.h>
 
 // Json-parser includes
 #include <jsoncpp/json/json.h>
-
-// Boost
-//#include <boost/python.hpp>
 
 /*
  * default constructor, setting up the initial QtWidget with a name and defining that the follwing code describes a
@@ -173,11 +171,14 @@ void labelizer::LabelizerPlugin::downloadImages()
 	// ********** get the path to the package **********
 	std::string package_path = ros::package::getPath("labelizer");
 
+	// ********** get the number of to-be-downloaded images per keyword **********
+	const int image_number = ui_.image_number_spin_box->value();
+
 	// ********** launch the python script to search and download the images from google images **********
 	QString python_script_path = QString::fromStdString(package_path + "/python/google-images-download.py");
 	QString command("python");
 	QStringList args;
-	args << python_script_path << "--color_name" << QString::fromStdString(color_name) << "--keywords";
+	args << python_script_path << "--image_number" << QString::number(image_number) << "--color_name" << QString::fromStdString(color_name) << "--keywords";
 	for(const std::string& keyword : color_search_keyowrds_)
 	{
 		args << QString::fromStdString(keyword);
