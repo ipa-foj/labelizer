@@ -23,6 +23,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--color_name', action='store', nargs='+', help='color names that should be searched with google images')
 parser.add_argument('--keywords', nargs='+', help='keywords that should be appended to the color names to search on google images')
+parser.add_argument('--image_number', type=int, help='the number of images that will be downloaded for a color with each keyword')
 args = parser.parse_args()
 
 #This list is used to search keywords. You can edit this list to search for google images of your choice. You can simply add and remove elements of the list.
@@ -30,6 +31,9 @@ search_keyword = args.color_name
 
 #This list is used to further add suffix to your search term. Each element of the list will help you download 100 images. First element is blank which denotes that no suffix is added to the search keyword of the above list. You can edit the list by adding/deleting elements from it.So if the first element of the search_keyword is 'Australia' and the second element of keywords is 'high resolution', then it will search for 'Australia High Resolution'
 keywords = args.keywords
+
+#Number of images that will be downloaded for each keyword
+number_of_files = args.image_number
 
 ########### End of Editing ###########
 
@@ -80,7 +84,8 @@ def _images_get_next_item(s):
 #Getting all links with the help of '_images_get_next_image'
 def _images_get_all_items(page):
     items = []
-    while True:
+    counter = 1
+    while counter<=number_of_files:
         item, end_content = _images_get_next_item(page)
         if item == "no_links":
             break
@@ -88,6 +93,7 @@ def _images_get_all_items(page):
             items.append(item)      #Append all the links in the list named 'Links'
             time.sleep(0.1)        #Timer could be used to slow down the request for image downloads
             page = page[end_content:]
+        counter = counter+1
     return items
 
 
